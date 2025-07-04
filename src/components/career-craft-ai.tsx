@@ -276,7 +276,7 @@ export default function CareerCraftAI() {
               CareerCraft AI
             </CardTitle>
             <CardDescription className="text-muted-foreground pt-1">
-              Instantly create polished messages for any career goal. Built for students, professionals, and job seekers.
+              Instantly create polished messages, emails for any career goal. Built for students, professionals, and job seekers.
             </CardDescription>
           </div>
         </div>
