@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, useRef} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
@@ -14,10 +14,12 @@ import {Textarea} from '@/components/ui/textarea';
 import {Separator} from '@/components/ui/separator';
 import {Skeleton} from '@/components/ui/skeleton';
 import {useToast} from '@/hooks/use-toast';
-import {Sparkles, ClipboardCopy, Wand2, FileCode2, Briefcase, MailCheck, Users} from 'lucide-react';
+import {Sparkles, ClipboardCopy, Wand2, FileCode2, Briefcase, MailCheck, Users, Pencil, Download} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
-import { Label } from "@/components/ui/label";
+import {Label} from "@/components/ui/label";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import jsPDF from 'jspdf';
 
 const formSchema = z.object({
   goal: z.string().min(10, {message: 'Please describe your goal in at least 10 characters.'}),
@@ -54,9 +56,11 @@ const templates = {
 
 export default function CareerCraftAI() {
   const [generatedMessage, setGeneratedMessage] = useState('');
+  const [editableMessage, setEditableMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const {toast} = useToast();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -83,6 +87,7 @@ export default function CareerCraftAI() {
   const handleSuggest = async () => {
     setIsSuggesting(true);
     setGeneratedMessage('');
+    setEditableMessage('');
     try {
       const suggestion = await suggestPrompt();
       form.reset({...form.getValues(), ...suggestion});
@@ -101,6 +106,7 @@ export default function CareerCraftAI() {
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     setGeneratedMessage('');
+    setEditableMessage('');
     try {
       const payload: GenerateMessageInput = {
         ...values,
@@ -108,6 +114,7 @@ export default function CareerCraftAI() {
       };
       const result = await generateMessage(payload);
       setGeneratedMessage(result.message);
+      setEditableMessage(result.message);
     } catch (error) {
       console.error('Error generating message:', error);
       toast({
@@ -121,11 +128,44 @@ export default function CareerCraftAI() {
   };
 
   const handleCopy = () => {
-    if (!generatedMessage) return;
-    navigator.clipboard.writeText(generatedMessage);
+    if (!editableMessage) return;
+    navigator.clipboard.writeText(editableMessage);
     toast({
       title: 'Copied to clipboard!',
       description: 'The message has been copied successfully.',
+    });
+  };
+
+  const handleEdit = () => {
+    textAreaRef.current?.focus();
+  };
+
+  const handleDownloadPdf = () => {
+    if (!editableMessage) return;
+    const doc = new jsPDF();
+    const splitText = doc.splitTextToSize(editableMessage, 180);
+    doc.text(splitText, 10, 10);
+    doc.save('CareerCraft-Message.pdf');
+    toast({
+      title: 'Download Started',
+      description: 'Your PDF is being downloaded.',
+    });
+  };
+
+  const handleDownloadWord = () => {
+    if (!editableMessage) return;
+    const blob = new Blob([editableMessage], {type: 'application/msword'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'CareerCraft-Message.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({
+      title: 'Download Started',
+      description: 'Your Word document is being downloaded.',
     });
   };
 
@@ -264,13 +304,42 @@ export default function CareerCraftAI() {
               </div>
               {isLoading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-40 w-full" />
+                  <div className="flex justify-end">
+                    <Skeleton className="h-10 w-44" />
+                  </div>
                 </div>
               ) : (
-                <div className="p-4 bg-secondary rounded-md border text-sm text-secondary-foreground whitespace-pre-wrap font-body">
-                  {generatedMessage}
+                <div className="space-y-2">
+                  <Textarea
+                    ref={textAreaRef}
+                    value={editableMessage}
+                    onChange={(e) => setEditableMessage(e.target.value)}
+                    placeholder="Your generated message will appear here. You can edit it directly."
+                    className="min-h-[200px] resize-y text-sm font-body"
+                  />
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                      <Button variant="outline" size="sm" onClick={handleEdit}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                      </Button>
+                      <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={handleDownloadPdf}>
+                                  PDF Document (.pdf)
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={handleDownloadWord}>
+                                  Word Document (.doc)
+                              </DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                  </div>
                 </div>
               )}
             </div>
