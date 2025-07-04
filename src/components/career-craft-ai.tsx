@@ -14,13 +14,16 @@ import {Textarea} from '@/components/ui/textarea';
 import {Separator} from '@/components/ui/separator';
 import {Skeleton} from '@/components/ui/skeleton';
 import {useToast} from '@/hooks/use-toast';
-import {Sparkles, ClipboardCopy, Wand2, FileCode2, Briefcase, MailCheck, Users, Pencil, Download} from 'lucide-react';
+import {Sparkles, ClipboardCopy, Wand2, FileCode2, Briefcase, MailCheck, Users, Pencil, Download, UserCircle} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
 import {Label} from "@/components/ui/label";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import {Switch} from "@/components/ui/switch";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 const formSchema = z.object({
+  messageType: z.string().nonempty({message: 'Please select a message type.'}),
   goal: z.string().min(10, {message: 'Please describe your goal in at least 10 characters.'}),
   keyPoints: z.string().min(10, {message: 'Please provide at least 10 characters of key points.'}),
   tone: z.string().nonempty({message: 'Please select a tone.'}),
@@ -34,24 +37,27 @@ type FormValues = z.infer<typeof formSchema>;
 
 const templates = {
   internship: {
+    messageType: 'Email',
     goal: 'Politely ask for an available internship position for the upcoming summer.',
     keyPoints: 'I am a second-year Computer Science student.\nMy skills include Python, JavaScript, and Firebase.\nI was impressed by your company\'s recent launch of [Product Name].\nMy resume is attached for your review.',
     tone: 'Professional & Formal',
-    recipient: '',
+    recipient: 'Hiring Manager',
     yourName: '',
-    signature: '',
-    wordLimit: '',
+    signature: 'Best regards',
+    wordLimit: '150',
   },
   followup: {
+    messageType: 'Email',
     goal: 'Send a thank-you note after an interview.',
     keyPoints: 'Thank the interviewer for their time.\nReiterate my strong interest in the role.\nBriefly mention a specific point from our conversation that I enjoyed, for example [Topic].\nI am excited about the opportunity to contribute to the team.',
     tone: 'Enthusiastic & Friendly',
     recipient: '',
     yourName: '',
-    signature: '',
-    wordLimit: '',
+    signature: 'Sincerely',
+    wordLimit: '120',
   },
   networking: {
+    messageType: 'LinkedIn Message',
     goal: 'Send a connection request on LinkedIn to someone in my field of interest.',
     keyPoints: 'I am a student passionate about [Your Field].\nI found their work on [Project/Article] very insightful.\nI would be honored to connect and follow their professional journey.',
     tone: 'Concise & Direct',
@@ -62,17 +68,84 @@ const templates = {
   },
 };
 
+const MessagePreview = ({ message, type, recipient, yourName }: { message: string, type: string, recipient?: string, yourName?: string }) => {
+  const renderContent = () => {
+    switch (type) {
+      case 'Email':
+      case 'Cold Outreach':
+        const emailParts = message.split('\n');
+        let subject = 'N/A';
+        let body = message;
+
+        if (emailParts[0].toLowerCase().startsWith('subject:')) {
+          subject = emailParts.shift()?.replace(/subject:/i, '').trim() || 'N/A';
+          // After removing the subject, there might be a blank line. Trim it.
+          body = emailParts.join('\n').trim();
+        }
+        
+        return (
+          <Card className="p-4 my-2 font-sans text-sm">
+            <div className="text-muted-foreground">
+              <p><strong className="text-foreground">To:</strong> {recipient || '[Recipient]'}</p>
+              <p><strong className="text-foreground">From:</strong> {yourName || '[Your Name]'}</p>
+              <p><strong className="text-foreground">Subject:</strong> {subject}</p>
+            </div>
+            <Separator className="my-3" />
+            <div className="whitespace-pre-wrap">{body}</div>
+          </Card>
+        );
+
+      case 'LinkedIn Message':
+        return (
+          <div className="p-4 my-2 flex items-start gap-3">
+            <Avatar>
+                <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="person avatar" />
+                <AvatarFallback>{(yourName || 'A').charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="bg-primary text-primary-foreground p-3 rounded-xl rounded-tl-sm text-sm">
+              <p className="whitespace-pre-wrap">{message}</p>
+            </div>
+          </div>
+        );
+
+      case 'Resume Bullet Point':
+        return (
+          <Card className="p-4 my-2">
+            <ul className="list-disc list-outside pl-5 text-sm">
+              <li>{message}</li>
+            </ul>
+          </Card>
+        );
+
+      case 'Cover Letter Paragraph':
+        return (
+          <Card className="p-6 my-2 font-serif text-base border-dashed">
+            <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
+          </Card>
+        );
+
+      default:
+        return <Textarea value={message} readOnly className="min-h-[200px] resize-y text-sm font-body" />;
+    }
+  };
+
+  return <div className="mt-4">{renderContent()}</div>;
+};
+
+
 export default function CareerCraftAI() {
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [editableMessage, setEditableMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(true);
   const {toast} = useToast();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      messageType: '',
       goal: '',
       keyPoints: '',
       tone: '',
@@ -115,6 +188,7 @@ export default function CareerCraftAI() {
     setIsLoading(true);
     setGeneratedMessage('');
     setEditableMessage('');
+    setIsEditMode(true);
     try {
       const payload: GenerateMessageInput = {
         ...values,
@@ -145,7 +219,12 @@ export default function CareerCraftAI() {
   };
 
   const handleEdit = () => {
-    textAreaRef.current?.focus();
+    setIsEditMode(true);
+    // Use a timeout to ensure the textarea is rendered before focusing
+    setTimeout(() => {
+        textAreaRef.current?.focus();
+        textAreaRef.current?.select();
+    }, 0);
   };
 
   const handleDownloadPdf = async () => {
@@ -177,6 +256,8 @@ export default function CareerCraftAI() {
       description: 'Your Word document is being downloaded.',
     });
   };
+  
+  const formValues = form.getValues();
 
   return (
     <Card className="w-full max-w-3xl shadow-2xl">
@@ -195,14 +276,38 @@ export default function CareerCraftAI() {
         <div className="mb-6 space-y-2">
             <Label>Get Started with a Template</Label>
             <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('internship')}><Briefcase/>Internship Request</Button>
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('followup')}><MailCheck/>Interview Follow-up</Button>
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('networking')}><Users/>Networking Outreach</Button>
+                <Button variant="outline" size="sm" onClick={() => applyTemplate('internship')}><Briefcase className="mr-2"/>Internship Request</Button>
+                <Button variant="outline" size="sm" onClick={() => applyTemplate('followup')}><MailCheck className="mr-2"/>Interview Follow-up</Button>
+                <Button variant="outline" size="sm" onClick={() => applyTemplate('networking')}><Users className="mr-2"/>Networking Outreach</Button>
             </div>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="messageType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Message Type</FormLabel>
+                     <Select onValueChange={field.onChange} value={field.value} disabled={isLoading || isSuggesting}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select the type of message you want to create" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="LinkedIn Message">LinkedIn Message</SelectItem>
+                        <SelectItem value="Resume Bullet Point">Resume Bullet Point</SelectItem>
+                        <SelectItem value="Cover Letter Paragraph">Cover Letter Paragraph</SelectItem>
+                        <SelectItem value="Cold Outreach">Cold Outreach</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="goal"
@@ -302,31 +407,44 @@ export default function CareerCraftAI() {
           <Separator className="my-6" />
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold font-headline">Generated Message</h3>
-                {!isLoading && (
-                  <Button variant="ghost" size="icon" onClick={handleCopy}>
-                    <ClipboardCopy className="h-4 w-4" />
-                    <span className="sr-only">Copy message</span>
-                  </Button>
-                )}
-              </div>
-              {isLoading ? (
+               {isLoading ? (
                 <div className="space-y-2">
+                  <h3 className="text-lg font-semibold font-headline">Generating Message...</h3>
                   <Skeleton className="h-40 w-full" />
-                  <div className="flex justify-end">
-                    <Skeleton className="h-10 w-44" />
-                  </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Textarea
-                    ref={textAreaRef}
-                    value={editableMessage}
-                    onChange={(e) => setEditableMessage(e.target.value)}
-                    placeholder="Your generated message will appear here. You can edit it directly."
-                    className="min-h-[200px] resize-y text-sm font-body"
-                  />
+                <>
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold font-headline">Generated Message</h3>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center space-x-2">
+                            <Switch id="edit-mode-toggle" checked={isEditMode} onCheckedChange={setIsEditMode} />
+                            <Label htmlFor="edit-mode-toggle" className="text-sm">{isEditMode ? 'Edit Mode' : 'Preview Mode'}</Label>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={handleCopy}>
+                            <ClipboardCopy className="h-4 w-4" />
+                            <span className="sr-only">Copy message</span>
+                        </Button>
+                    </div>
+                  </div>
+
+                  {isEditMode ? (
+                      <Textarea
+                        ref={textAreaRef}
+                        value={editableMessage}
+                        onChange={(e) => setEditableMessage(e.target.value)}
+                        placeholder="Your generated message will appear here. You can edit it directly."
+                        className="min-h-[200px] resize-y text-sm font-body"
+                      />
+                  ) : (
+                      <MessagePreview 
+                        message={editableMessage} 
+                        type={formValues.messageType} 
+                        recipient={formValues.recipient} 
+                        yourName={formValues.yourName} 
+                      />
+                  )}
+                  
                   <div className="flex items-center justify-end gap-2 pt-2">
                       <Button variant="outline" size="sm" onClick={handleEdit}>
                           <Pencil className="mr-2 h-4 w-4" />
@@ -349,7 +467,7 @@ export default function CareerCraftAI() {
                           </DropdownMenuContent>
                       </DropdownMenu>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </CardContent>
