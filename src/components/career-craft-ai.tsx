@@ -19,7 +19,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
 import {Label} from "@/components/ui/label";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import jsPDF from 'jspdf';
 
 const formSchema = z.object({
   goal: z.string().min(10, {message: 'Please describe your goal in at least 10 characters.'}),
@@ -140,8 +139,9 @@ export default function CareerCraftAI() {
     textAreaRef.current?.focus();
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!editableMessage) return;
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const splitText = doc.splitTextToSize(editableMessage, 180);
     doc.text(splitText, 10, 10);
