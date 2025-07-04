@@ -275,7 +275,9 @@ export default function CareerCraftAI() {
             <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               CareerCraft AI
             </CardTitle>
-            <CardDescription className="text-muted-foreground">Generate professional messages with the power of AI.</CardDescription>
+            <CardDescription className="text-muted-foreground pt-1">
+              Instantly create polished messages for any career goal. Built for students, professionals, and job seekers.
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
