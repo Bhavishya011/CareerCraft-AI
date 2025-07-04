@@ -8,6 +8,13 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
@@ -88,10 +95,25 @@ export default {
             height: '0',
           },
         },
+        'fade-up': {
+            '0%': { opacity: '0', transform: 'translateY(10px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+            '0%': { opacity: '0' },
+            '100%': { opacity: '1' },
+        },
+        'glow-pulse': {
+            '0%, 100%': { textShadow: '0 0 5px hsl(var(--accent) / 0.5)' },
+            '50%': { textShadow: '0 0 15px hsl(var(--accent) / 0.8)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-up': 'fade-up 0.5s ease-out forwards',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        'glow-pulse': 'glow-pulse 3s infinite',
       },
     },
   },

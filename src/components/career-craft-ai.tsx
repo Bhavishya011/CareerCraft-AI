@@ -14,7 +14,7 @@ import {Textarea} from '@/components/ui/textarea';
 import {Separator} from '@/components/ui/separator';
 import {Skeleton} from '@/components/ui/skeleton';
 import {useToast} from '@/hooks/use-toast';
-import {Sparkles, ClipboardCopy, Wand2, FileCode2, Briefcase, MailCheck, Users, Pencil, Download, UserCircle} from 'lucide-react';
+import {Sparkles, ClipboardCopy, Wand2, RefreshCw, Briefcase, MailCheck, Users, Pencil, Download} from 'lucide-react';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from '@/components/ui/accordion';
 import {Label} from "@/components/ui/label";
@@ -70,6 +70,8 @@ const templates = {
 
 const MessagePreview = ({ message, type, recipient, yourName }: { message: string, type: string, recipient?: string, yourName?: string }) => {
   const renderContent = () => {
+    const cardClassName = "p-4 my-2 font-sans text-sm bg-card/60 border-accent/20 backdrop-blur-sm";
+
     switch (type) {
       case 'Email':
       case 'Cold Outreach':
@@ -79,18 +81,17 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
 
         if (emailParts[0].toLowerCase().startsWith('subject:')) {
           subject = emailParts.shift()?.replace(/subject:/i, '').trim() || 'N/A';
-          // After removing the subject, there might be a blank line. Trim it.
           body = emailParts.join('\n').trim();
         }
         
         return (
-          <Card className="p-4 my-2 font-sans text-sm">
+          <Card className={cardClassName}>
             <div className="text-muted-foreground">
               <p><strong className="text-foreground">To:</strong> {recipient || '[Recipient]'}</p>
               <p><strong className="text-foreground">From:</strong> {yourName || '[Your Name]'}</p>
               <p><strong className="text-foreground">Subject:</strong> {subject}</p>
             </div>
-            <Separator className="my-3" />
+            <Separator className="my-3 border-accent/20" />
             <div className="whitespace-pre-wrap">{body}</div>
           </Card>
         );
@@ -110,7 +111,7 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
 
       case 'Resume Bullet Point':
         return (
-          <Card className="p-4 my-2">
+          <Card className={cardClassName}>
             <ul className="list-disc list-outside pl-5 text-sm">
               <li>{message}</li>
             </ul>
@@ -119,13 +120,13 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
 
       case 'Cover Letter Paragraph':
         return (
-          <Card className="p-6 my-2 font-serif text-base border-dashed">
+          <Card className={`${cardClassName} font-serif text-base border-dashed border-accent/40`}>
             <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
           </Card>
         );
 
       default:
-        return <Textarea value={message} readOnly className="min-h-[200px] resize-y text-sm font-body" />;
+        return <Textarea value={message} readOnly className="min-h-[200px] resize-y text-sm font-body bg-background" />;
     }
   };
 
@@ -208,6 +209,11 @@ export default function CareerCraftAI() {
       setIsLoading(false);
     }
   };
+  
+  const handleRedesign = () => {
+    // Re-submit the form to get a new message variant
+    form.handleSubmit(onSubmit)();
+  };
 
   const handleCopy = () => {
     if (!editableMessage) return;
@@ -220,7 +226,6 @@ export default function CareerCraftAI() {
 
   const handleEdit = () => {
     setIsEditMode(true);
-    // Use a timeout to ensure the textarea is rendered before focusing
     setTimeout(() => {
         textAreaRef.current?.focus();
         textAreaRef.current?.select();
@@ -260,15 +265,17 @@ export default function CareerCraftAI() {
   const formValues = form.getValues();
 
   return (
-    <Card className="w-full max-w-3xl shadow-2xl">
+    <Card className="w-full max-w-3xl rounded-2xl border border-accent/20 bg-card/60 backdrop-blur-sm shadow-2xl shadow-accent/10 animate-fade-up">
       <CardHeader>
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-lg">
-            <FileCode2 className="h-6 w-6 text-primary" aria-hidden="true" />
+          <div className="p-3 bg-primary/10 rounded-lg border border-accent/20">
+            <Wand2 className="h-6 w-6 text-accent" aria-hidden="true" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-headline">CareerCraft AI</CardTitle>
-            <CardDescription>Generate professional messages with the power of AI.</CardDescription>
+            <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              CareerCraft AI
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">Generate professional messages with the power of AI.</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -276,9 +283,9 @@ export default function CareerCraftAI() {
         <div className="mb-6 space-y-2">
             <Label>Get Started with a Template</Label>
             <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('internship')}><Briefcase className="mr-2"/>Internship Request</Button>
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('followup')}><MailCheck className="mr-2"/>Interview Follow-up</Button>
-                <Button variant="outline" size="sm" onClick={() => applyTemplate('networking')}><Users className="mr-2"/>Networking Outreach</Button>
+                <Button variant="secondary" size="sm" onClick={() => applyTemplate('internship')} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"><Briefcase className="mr-2"/>Internship Request</Button>
+                <Button variant="secondary" size="sm" onClick={() => applyTemplate('followup')} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"><MailCheck className="mr-2"/>Interview Follow-up</Button>
+                <Button variant="secondary" size="sm" onClick={() => applyTemplate('networking')} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"><Users className="mr-2"/>Networking Outreach</Button>
             </div>
         </div>
         <Form {...form}>
@@ -292,7 +299,7 @@ export default function CareerCraftAI() {
                     <FormLabel>Message Type</FormLabel>
                      <Select onValueChange={field.onChange} value={field.value} disabled={isLoading || isSuggesting}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-background">
                           <SelectValue placeholder="Select the type of message you want to create" />
                         </SelectTrigger>
                       </FormControl>
@@ -315,7 +322,7 @@ export default function CareerCraftAI() {
                   <FormItem>
                     <FormLabel>Message Goal</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Request a promotion from my manager" {...field} disabled={isLoading || isSuggesting} />
+                      <Input placeholder="e.g., Request a promotion from my manager" {...field} disabled={isLoading || isSuggesting} className="bg-background" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -329,8 +336,8 @@ export default function CareerCraftAI() {
                     <FormLabel>Key Points</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Highlight my recent achievements, express my commitment to the company, and state my desired new role."
-                        className="resize-none"
+                        placeholder="e.g., Highlight my recent achievements, express my commitment, state my desired new role."
+                        className="resize-none bg-background"
                         rows={4}
                         {...field}
                         disabled={isLoading || isSuggesting}
@@ -348,7 +355,7 @@ export default function CareerCraftAI() {
                     <FormLabel>Desired Tone</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={isLoading || isSuggesting}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-background">
                           <SelectValue placeholder="Select a tone for your message" />
                         </SelectTrigger>
                       </FormControl>
@@ -365,22 +372,22 @@ export default function CareerCraftAI() {
                 )}
               />
 
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion type="single" collapsible className="w-full border-b-accent/20">
                 <AccordionItem value="item-1">
                   <AccordionTrigger>Optional Details</AccordionTrigger>
                   <AccordionContent className="pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <FormField control={form.control} name="recipient" render={({field}) => (
-                          <FormItem><FormLabel>Recipient (Optional)</FormLabel><FormControl><Input placeholder="e.g., The Hiring Team" {...field} disabled={isLoading || isSuggesting} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Recipient (Optional)</FormLabel><FormControl><Input placeholder="e.g., The Hiring Team" {...field} disabled={isLoading || isSuggesting} className="bg-background"/></FormControl><FormMessage /></FormItem>
                        )} />
                        <FormField control={form.control} name="yourName" render={({field}) => (
-                          <FormItem><FormLabel>Your Name (Optional)</FormLabel><FormControl><Input placeholder="e.g., Alex Doe" {...field} disabled={isLoading || isSuggesting} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Your Name (Optional)</FormLabel><FormControl><Input placeholder="e.g., Alex Doe" {...field} disabled={isLoading || isSuggesting} className="bg-background"/></FormControl><FormMessage /></FormItem>
                        )} />
                        <FormField control={form.control} name="signature" render={({field}) => (
-                          <FormItem><FormLabel>Sign-off (Optional)</FormLabel><FormControl><Input placeholder="e.g., Sincerely" {...field} disabled={isLoading || isSuggesting} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Sign-off (Optional)</FormLabel><FormControl><Input placeholder="e.g., Sincerely" {...field} disabled={isLoading || isSuggesting} className="bg-background"/></FormControl><FormMessage /></FormItem>
                        )} />
                        <FormField control={form.control} name="wordLimit" render={({field}) => (
-                          <FormItem><FormLabel>Word Limit (Optional)</FormLabel><FormControl><Input type="number" placeholder="e.g., 150" {...field} disabled={isLoading || isSuggesting} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel>Word Limit (Optional)</FormLabel><FormControl><Input type="number" placeholder="e.g., 150" {...field} disabled={isLoading || isSuggesting} className="bg-background"/></FormControl><FormMessage /></FormItem>
                        )} />
                     </div>
                   </AccordionContent>
@@ -389,11 +396,11 @@ export default function CareerCraftAI() {
             </div>
             
             <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 p-0 pt-4">
-              <Button type="button" variant="outline" onClick={handleSuggest} disabled={isLoading || isSuggesting}>
+              <Button type="button" variant="outline" onClick={handleSuggest} disabled={isLoading || isSuggesting} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                 <Wand2 className={`mr-2 h-4 w-4 ${isSuggesting ? 'animate-spin' : ''}`} />
                 {isSuggesting ? 'Suggesting...' : 'Suggest Inputs'}
               </Button>
-              <Button type="submit" disabled={isLoading || isSuggesting} className="w-full sm:w-auto">
+              <Button type="submit" disabled={isLoading || isSuggesting} className="w-full sm:w-auto font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/40">
                 <Sparkles className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 {isLoading ? 'Generating...' : 'Generate Message'}
               </Button>
@@ -404,22 +411,22 @@ export default function CareerCraftAI() {
 
       {(isLoading || generatedMessage) && (
         <>
-          <Separator className="my-6" />
-          <CardContent>
+          <Separator className="my-6 border-accent/20" />
+          <CardContent className="animate-fade-in">
             <div className="space-y-4">
                {isLoading ? (
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold font-headline">Generating Message...</h3>
-                  <Skeleton className="h-40 w-full" />
+                  <h3 className="text-lg font-semibold tracking-tight">Generating Message...</h3>
+                  <Skeleton className="h-40 w-full bg-card/80" />
                 </div>
               ) : (
                 <>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold font-headline">Generated Message</h3>
+                    <h3 className="text-lg font-semibold tracking-tight">Generated Message</h3>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center space-x-2">
                             <Switch id="edit-mode-toggle" checked={isEditMode} onCheckedChange={setIsEditMode} />
-                            <Label htmlFor="edit-mode-toggle" className="text-sm">{isEditMode ? 'Edit Mode' : 'Preview Mode'}</Label>
+                            <Label htmlFor="edit-mode-toggle" className="text-sm">{isEditMode ? 'Edit' : 'Preview'}</Label>
                         </div>
                         <Button variant="ghost" size="icon" onClick={handleCopy}>
                             <ClipboardCopy className="h-4 w-4" />
@@ -434,7 +441,7 @@ export default function CareerCraftAI() {
                         value={editableMessage}
                         onChange={(e) => setEditableMessage(e.target.value)}
                         placeholder="Your generated message will appear here. You can edit it directly."
-                        className="min-h-[200px] resize-y text-sm font-body"
+                        className="min-h-[200px] resize-y text-sm font-body bg-background"
                       />
                   ) : (
                       <MessagePreview 
@@ -446,13 +453,17 @@ export default function CareerCraftAI() {
                   )}
                   
                   <div className="flex items-center justify-end gap-2 pt-2">
-                      <Button variant="outline" size="sm" onClick={handleEdit}>
+                      <Button variant="outline" size="sm" onClick={handleEdit} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                       </Button>
+                       <Button variant="outline" size="sm" onClick={handleRedesign} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Redesign
+                      </Button>
                       <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                                   <Download className="mr-2 h-4 w-4" />
                                   Download
                               </Button>
