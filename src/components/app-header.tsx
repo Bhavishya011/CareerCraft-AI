@@ -9,7 +9,7 @@ export default function AppHeader() {
           <span className="font-bold text-foreground">CareerCraft AI</span>
         </div>
         <a 
-          href="https://github.com/FirebaseExtended/codelab-genai-app-builder-card" 
+          href="https://github.com/Bhavishya011/CareerCraft-AI" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="flex items-center gap-2 text-sm text-foreground transition-colors hover:text-accent"
