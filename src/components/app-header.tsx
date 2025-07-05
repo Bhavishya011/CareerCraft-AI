@@ -6,7 +6,7 @@ export default function AppHeader() {
       <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
         <div className="flex items-center gap-2">
           <Wand2 className="h-6 w-6 text-accent" />
-          <span className="font-bold text-foreground">CareerCraft AI</span>
+          <span className="font-bold text-foreground">TypeWise AI</span>
         </div>
         <a 
           href="https://github.com/Bhavishya011/CareerCraft-AI" 

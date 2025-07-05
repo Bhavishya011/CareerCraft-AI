@@ -6,7 +6,7 @@ export default function AppFooter() {
           Crafted with ❤️ by 
           <a href="https://github.com/Bhavishya011" className="font-medium text-accent hover:underline animate-glow-pulse mx-1">Bhavishya Jain</a> & 
           <a href="https://github.com/soumya-xy" className="font-medium text-accent hover:underline animate-glow-pulse mx-1">Soumya Jain</a> 
-          • © 2025 CareerCraft AI
+          • © 2025 TypeWise AI
         </p>
       </div>
     </footer>

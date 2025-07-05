@@ -131,7 +131,7 @@ const MessagePreview = ({ subject, body, type, recipient, yourName }: { subject?
 };
 
 
-export default function CareerCraftAI() {
+export default function TypeWiseAI() {
   const [generatedOutput, setGeneratedOutput] = useState<{ subject?: string; body: string } | null>(null);
   const [editableBody, setEditableBody] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -244,7 +244,7 @@ export default function CareerCraftAI() {
     }
     const splitText = doc.splitTextToSize(fullText, 180);
     doc.text(splitText, 10, 10);
-    doc.save('CareerCraft-Message.pdf');
+    doc.save('TypeWise-Message.pdf');
     toast({
       title: 'Download Started',
       description: 'Your PDF is being downloaded.',
@@ -261,7 +261,7 @@ export default function CareerCraftAI() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'CareerCraft-Message.doc';
+    link.download = 'TypeWise-Message.doc';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -284,7 +284,7 @@ export default function CareerCraftAI() {
             </div>
             <div>
               <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                CareerCraft AI
+                TypeWise AI
               </CardTitle>
               <CardDescription className="text-muted-foreground pt-1">
                 Instantly create polished messages for any career goal.
