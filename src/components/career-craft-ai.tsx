@@ -145,7 +145,7 @@ export default function CareerCraftAI() {
   const [editableMessage, setEditableMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
   const {toast} = useToast();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -201,7 +201,7 @@ export default function CareerCraftAI() {
     setIsLoading(true);
     setGeneratedMessage('');
     setEditableMessage('');
-    setIsEditMode(true);
+    setIsEditMode(false);
     try {
       const payload: GenerateMessageInput = {
         ...values,
@@ -464,13 +464,13 @@ export default function CareerCraftAI() {
                     )}
                     
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-                        <Button variant="outline" size="sm" onClick={handleCopy} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
-                            <ClipboardCopy className="mr-2 h-4 w-4" />
-                            Copy
-                        </Button>
                         <Button variant="outline" size="sm" onClick={handleEdit} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleCopy} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
+                            <ClipboardCopy className="mr-2 h-4 w-4" />
+                            Copy
                         </Button>
                          <Button variant="outline" size="sm" onClick={handleRedesign} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                             <RefreshCw className="mr-2 h-4 w-4" />
