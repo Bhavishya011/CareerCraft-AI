@@ -159,7 +159,13 @@ export default function CareerCraftAI() {
 
   const applyTemplate = (type: keyof typeof templates) => {
     const template = templates[type];
-    form.reset(template);
+    form.reset({
+      ...template,
+      recipient: template.recipient || '',
+      yourName: template.yourName || '',
+      signature: template.signature || '',
+      wordLimit: template.wordLimit || '',
+    });
     toast({
       title: 'Template Applied!',
       description: `The form has been pre-filled with the "${type}" template.`,
@@ -262,7 +268,7 @@ export default function CareerCraftAI() {
     });
   };
   
-  const formValues = form.getValues();
+  const formValues = form.watch();
 
   return (
     <Card className="w-full max-w-3xl rounded-2xl border border-accent/20 bg-card/60 backdrop-blur-sm shadow-2xl shadow-accent/10 animate-fade-up">
@@ -276,7 +282,7 @@ export default function CareerCraftAI() {
               CareerCraft AI
             </CardTitle>
             <CardDescription className="text-muted-foreground pt-1">
-              Instantly create polished messages, emails for any career goal. Built for students, professionals, and job seekers.
+              Instantly create polished messages for any career goal.
             </CardDescription>
           </div>
         </div>
@@ -454,7 +460,7 @@ export default function CareerCraftAI() {
                       />
                   )}
                   
-                  <div className="flex items-center justify-end gap-2 pt-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                       <Button variant="outline" size="sm" onClick={handleEdit} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
