@@ -443,17 +443,6 @@ export default function CareerCraftAI() {
                               <Switch id="edit-mode-toggle" checked={isEditMode} onCheckedChange={setIsEditMode} />
                               <Label htmlFor="edit-mode-toggle" className="text-sm">{isEditMode ? 'Edit' : 'Preview'}</Label>
                           </div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={handleCopy}>
-                                  <ClipboardCopy className="h-4 w-4" />
-                                  <span className="sr-only">Copy to Clipboard</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Copy to Clipboard</p>
-                            </TooltipContent>
-                          </Tooltip>
                       </div>
                     </div>
 
@@ -475,6 +464,10 @@ export default function CareerCraftAI() {
                     )}
                     
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                        <Button variant="outline" size="sm" onClick={handleCopy} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
+                            <ClipboardCopy className="mr-2 h-4 w-4" />
+                            Copy
+                        </Button>
                         <Button variant="outline" size="sm" onClick={handleEdit} className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20">
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit
