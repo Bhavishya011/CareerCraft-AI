@@ -48,7 +48,7 @@ const templates = {
     keyPoints: 'I am a second-year Computer Science student.\nMy skills include Python, JavaScript, and Firebase.\nI was impressed by your company\'s recent launch of [Product Name].\nMy resume is attached for your review.',
     tone: 'Professional & Formal',
     recipient: 'Hiring Manager',
-    yourName: '',
+    yourName: 'Alex Doe',
     signature: 'Best regards',
     wordLimit: '150',
   },
@@ -57,8 +57,8 @@ const templates = {
     goal: 'Send a thank-you note after an interview.',
     keyPoints: 'Thank the interviewer for their time.\nReiterate my strong interest in the role.\nBriefly mention a specific point from our conversation that I enjoyed, for example [Topic].\nI am excited about the opportunity to contribute to the team.',
     tone: 'Enthusiastic & Friendly',
-    recipient: '',
-    yourName: '',
+    recipient: 'Jane Smith',
+    yourName: 'Alex Doe',
     signature: 'Sincerely',
     wordLimit: '120',
   },
@@ -67,35 +67,26 @@ const templates = {
     goal: 'Send a connection request on LinkedIn to someone in my field of interest.',
     keyPoints: 'I am a student passionate about [Your Field].\nI found their work on [Project/Article] very insightful.\nI would be honored to connect and follow their professional journey.',
     tone: 'Concise & Direct',
-    recipient: '',
-    yourName: '',
+    recipient: 'John Appleseed',
+    yourName: 'Alex Doe',
     signature: '',
     wordLimit: '50',
   },
 };
 
-const MessagePreview = ({ message, type, recipient, yourName }: { message: string, type: string, recipient?: string, yourName?: string }) => {
+const MessagePreview = ({ subject, body, type, recipient, yourName }: { subject?: string, body: string, type: string, recipient?: string, yourName?: string }) => {
   const renderContent = () => {
     const cardClassName = "p-4 my-2 font-sans text-sm bg-card/60 border-accent/20 backdrop-blur-sm";
 
     switch (type) {
       case 'Email':
       case 'Cold Outreach':
-        const emailParts = message.split('\n');
-        let subject = 'N/A';
-        let body = message;
-
-        if (emailParts[0].toLowerCase().startsWith('subject:')) {
-          subject = emailParts.shift()?.replace(/subject:/i, '').trim() || 'N/A';
-          body = emailParts.join('\n').trim();
-        }
-        
         return (
           <Card className={cardClassName}>
             <div className="text-muted-foreground">
               <p><strong className="text-foreground">To:</strong> {recipient || '[Recipient]'}</p>
               <p><strong className="text-foreground">From:</strong> {yourName || '[Your Name]'}</p>
-              <p><strong className="text-foreground">Subject:</strong> {subject}</p>
+              <p><strong className="text-foreground">Subject:</strong> {subject || '(No subject generated)'}</p>
             </div>
             <Separator className="my-3 border-accent/20" />
             <div className="whitespace-pre-wrap">{body}</div>
@@ -110,7 +101,7 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
                 <AvatarFallback>{(yourName || 'A').charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="bg-primary text-primary-foreground p-3 rounded-xl rounded-tl-sm text-sm">
-              <p className="whitespace-pre-wrap">{message}</p>
+              <p className="whitespace-pre-wrap">{body}</p>
             </div>
           </div>
         );
@@ -119,7 +110,7 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
         return (
           <Card className={cardClassName}>
             <ul className="list-disc list-outside pl-5 text-sm">
-              <li>{message}</li>
+              <li>{body}</li>
             </ul>
           </Card>
         );
@@ -127,12 +118,12 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
       case 'Cover Letter Paragraph':
         return (
           <Card className={`${cardClassName} font-serif text-base border-dashed border-accent/40`}>
-            <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
+            <p className="whitespace-pre-wrap leading-relaxed">{body}</p>
           </Card>
         );
 
       default:
-        return <Textarea value={message} readOnly className="min-h-[200px] resize-y text-sm font-body bg-background" />;
+        return <Textarea value={body} readOnly className="min-h-[200px] resize-y text-sm font-body bg-background" />;
     }
   };
 
@@ -141,8 +132,8 @@ const MessagePreview = ({ message, type, recipient, yourName }: { message: strin
 
 
 export default function CareerCraftAI() {
-  const [generatedMessage, setGeneratedMessage] = useState('');
-  const [editableMessage, setEditableMessage] = useState('');
+  const [generatedOutput, setGeneratedOutput] = useState<{ subject?: string; body: string } | null>(null);
+  const [editableBody, setEditableBody] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -180,8 +171,8 @@ export default function CareerCraftAI() {
 
   const handleSuggest = async () => {
     setIsSuggesting(true);
-    setGeneratedMessage('');
-    setEditableMessage('');
+    setGeneratedOutput(null);
+    setEditableBody('');
     try {
       const suggestion = await suggestPrompt();
       form.reset({...form.getValues(), ...suggestion});
@@ -199,8 +190,8 @@ export default function CareerCraftAI() {
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    setGeneratedMessage('');
-    setEditableMessage('');
+    setGeneratedOutput(null);
+    setEditableBody('');
     setIsEditMode(false);
     try {
       const payload: GenerateMessageInput = {
@@ -208,8 +199,8 @@ export default function CareerCraftAI() {
         wordLimit: values.wordLimit ? Number(values.wordLimit) : undefined,
       };
       const result = await generateMessage(payload);
-      setGeneratedMessage(result.message);
-      setEditableMessage(result.message);
+      setGeneratedOutput(result);
+      setEditableBody(result.body);
     } catch (error) {
       console.error('Error generating message:', error);
       toast({
@@ -223,13 +214,12 @@ export default function CareerCraftAI() {
   };
   
   const handleRedesign = () => {
-    // Re-submit the form to get a new message variant
     form.handleSubmit(onSubmit)();
   };
 
   const handleCopy = () => {
-    if (!editableMessage) return;
-    navigator.clipboard.writeText(editableMessage);
+    if (!editableBody) return;
+    navigator.clipboard.writeText(editableBody);
     toast({
       title: 'Copied to clipboard!',
       description: 'The message has been copied successfully.',
@@ -245,10 +235,14 @@ export default function CareerCraftAI() {
   };
 
   const handleDownloadPdf = async () => {
-    if (!editableMessage) return;
+    if (!generatedOutput) return;
     const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
-    const splitText = doc.splitTextToSize(editableMessage, 180);
+    let fullText = editableBody;
+    if (generatedOutput.subject) {
+        fullText = `Subject: ${generatedOutput.subject}\n\n${editableBody}`;
+    }
+    const splitText = doc.splitTextToSize(fullText, 180);
     doc.text(splitText, 10, 10);
     doc.save('CareerCraft-Message.pdf');
     toast({
@@ -258,8 +252,12 @@ export default function CareerCraftAI() {
   };
 
   const handleDownloadWord = () => {
-    if (!editableMessage) return;
-    const blob = new Blob([editableMessage], {type: 'application/msword'});
+    if (!generatedOutput) return;
+    let fullText = editableBody;
+    if (generatedOutput.subject) {
+        fullText = `Subject: ${generatedOutput.subject}\n\n${editableBody}`;
+    }
+    const blob = new Blob([fullText], {type: 'application/msword'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -424,7 +422,7 @@ export default function CareerCraftAI() {
           </Form>
         </CardContent>
 
-        {(isLoading || generatedMessage) && (
+        {(isLoading || generatedOutput) && (
           <>
             <Separator className="my-6 border-accent/20" />
             <CardContent className="animate-fade-in">
@@ -434,7 +432,7 @@ export default function CareerCraftAI() {
                     <h3 className="text-lg font-semibold tracking-tight">Generating Message...</h3>
                     <Skeleton className="h-40 w-full bg-card/80" />
                   </div>
-                ) : (
+                ) : generatedOutput && (
                   <>
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold tracking-tight">Generated Message</h3>
@@ -449,14 +447,15 @@ export default function CareerCraftAI() {
                     {isEditMode ? (
                         <Textarea
                           ref={textAreaRef}
-                          value={editableMessage}
-                          onChange={(e) => setEditableMessage(e.target.value)}
+                          value={editableBody}
+                          onChange={(e) => setEditableBody(e.target.value)}
                           placeholder="Your generated message will appear here. You can edit it directly."
                           className="min-h-[200px] resize-y text-sm font-body bg-background"
                         />
                     ) : (
                         <MessagePreview 
-                          message={editableMessage} 
+                          subject={generatedOutput.subject}
+                          body={editableBody} 
                           type={formValues.messageType} 
                           recipient={formValues.recipient} 
                           yourName={formValues.yourName} 
