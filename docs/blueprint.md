@@ -6,7 +6,7 @@
 - Message Generation: AI-powered generation of a professional message based on the user's input.
 - Message Display: Clear and concise display of the generated message.
 - Copy to Clipboard: Copy-to-clipboard functionality for easy message transfer.
-- Backend API Call: Securely calls the Hugging Face API on the backend using Firebase Cloud Functions.
+- Backend API Call: Securely calls the Gemini API on the backend using Firebase Cloud Functions.
 - AI-Powered Prompt Suggestions: The application provides example goals, key points, and tone inputs to encourage usage, by functioning as an example tool.
 
 ## Style Guidelines:
