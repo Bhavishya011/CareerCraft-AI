@@ -1,4 +1,4 @@
-# **App Name**: CareerCraft AI
+# **App Name**: TypeWise AI
 
 ## Core Features:
 
