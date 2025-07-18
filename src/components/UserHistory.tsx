@@ -184,34 +184,37 @@ export default function UserHistory() {
             </div>
 
             {isOpen && !isEditing && (
-              <div className="flex items-center justify-end gap-1 border-t border-accent/10 mt-3 pt-2">
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-accent/10 mt-3 pt-2">
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleCopy(item.message)}
                   title="Copy"
+                  className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                 >
-                  <ClipboardCopy className="w-4 h-4 text-primary" />
+                  <ClipboardCopy className="mr-2 h-4 w-4" />
+                  Copy
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleEdit(item.id, item.message)}
                   title="Edit"
+                  className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                 >
-                  <Pencil className="w-4 h-4 text-primary" />
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                      variant="outline"
+                      size="sm"
                       title="Download"
+                      className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                     >
-                      <Download className="w-4 h-4 text-primary" />
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -228,13 +231,14 @@ export default function UserHistory() {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
+                  variant="destructive"
+                  size="sm"
                   onClick={() => handleDelete(item.id)}
                   title="Delete"
+                  className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
-                  <Trash2 className="w-4 h-4 text-destructive" />
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
                 </Button>
               </div>
             )}
