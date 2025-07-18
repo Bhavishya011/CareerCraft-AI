@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -41,6 +42,7 @@ import {
   Users,
   Pencil,
   Download,
+  LogIn,
 } from "lucide-react";
 import {
   Select,
@@ -70,8 +72,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 const formSchema = z.object({
   messageType: z
@@ -220,6 +223,22 @@ const MessagePreview = ({
   return <div className="mt-4">{renderContent()}</div>;
 };
 
+const SignInPrompt = () => (
+  <div className="my-4 rounded-lg border border-accent/20 bg-primary/10 p-4 text-center">
+    <h4 className="font-bold text-primary">Want to save your work?</h4>
+    <p className="text-sm text-muted-foreground mt-1 mb-3">
+      Sign in to save your generated messages and view your chat history at any
+      time.
+    </p>
+    <Button asChild size="sm">
+      <Link href="/auth">
+        <LogIn className="mr-2 h-4 w-4" />
+        Sign In to Continue
+      </Link>
+    </Button>
+  </div>
+);
+
 export default function TypeWiseAI() {
   const [generatedOutput, setGeneratedOutput] = useState<{
     subject?: string;
@@ -229,9 +248,19 @@ export default function TypeWiseAI() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkUser();
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -287,7 +316,7 @@ export default function TypeWiseAI() {
     setGeneratedOutput(null);
     setEditableBody("");
     setIsEditMode(false);
-  
+
     try {
       const payload: GenerateMessageInput = {
         ...values,
@@ -296,17 +325,17 @@ export default function TypeWiseAI() {
       const result = await generateMessage(payload);
       setGeneratedOutput(result);
       setEditableBody(result.body);
-  
+
       // Try to save to Supabase if user is logged in
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-  
+
         if (user) {
-          await supabase.from("History").insert([
-            { user_id: user.id, message: result.body },
-          ]);
+          await supabase
+            .from("History")
+            .insert([{ user_id: user.id, message: result.body }]);
         }
       } catch (e) {
         console.warn("Skipping history save (unauthenticated user).");
@@ -323,7 +352,6 @@ export default function TypeWiseAI() {
       setIsLoading(false);
     }
   };
-  
 
   const handleRedesign = () => {
     form.handleSubmit(onSubmit)();
@@ -725,6 +753,8 @@ export default function TypeWiseAI() {
                           yourName={formValues.yourName}
                         />
                       )}
+
+                      {!user && generatedOutput && <SignInPrompt />}
 
                       <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                         <Button
