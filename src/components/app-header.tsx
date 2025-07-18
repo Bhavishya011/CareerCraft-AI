@@ -35,20 +35,20 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-accent/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="flex items-center gap-2">
           <Wand2 className="h-6 w-6 text-accent" />
           <span className="font-bold text-foreground">TypeWise AI</span>
-        </div>
-        <div className="flex items-center gap-5">
+        </Link>
+        <div className="flex items-center gap-2 sm:gap-4">
           {user ? (
             <div className="relative group">
               <Button
                 variant="outline"
                 className="flex items-center gap-2 font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg px-3"
               >
-                <UserIcon className="w-5 h-5 text-accent" />
-                <span className="max-w-[120px] truncate text-sm">
+                <UserIcon className="w-5 h-5 text-accent flex-shrink-0" />
+                <span className="hidden sm:inline max-w-[100px] truncate text-sm">
                   {user.email}
                 </span>
                 <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground" />
@@ -63,7 +63,7 @@ export default function AppHeader() {
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="px-4 py-2 text-sm text-destructive flex items-center gap-2 hover:bg-destructive/10 transition rounded-md text-left text-white"
+                    className="px-4 py-2 text-sm text-destructive flex items-center gap-2 hover:bg-destructive/10 transition rounded-md text-left"
                   >
                     <LogOut className="w-4 h-4" /> Sign Out
                   </button>
@@ -72,7 +72,7 @@ export default function AppHeader() {
             </div>
           ) : (
             <Link href="/auth">
-              <Button className="ml-2 font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg">
+              <Button size="sm" className="font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 Sign In
               </Button>
             </Link>
@@ -83,8 +83,8 @@ export default function AppHeader() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-foreground transition-colors hover:text-accent"
           >
-            <Github className="h-4 w-4" />
-            GitHub
+            <Github className="h-5 w-5 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">GitHub</span>
           </a>
         </div>
       </div>

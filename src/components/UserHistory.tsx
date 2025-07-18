@@ -136,7 +136,7 @@ export default function UserHistory() {
               className="flex items-center justify-between cursor-pointer"
               onClick={() => !isEditing && setOpenId(isOpen ? null : item.id)}
             >
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 {new Date(item.created_at).toLocaleString()}
               </div>
               <div className="text-sm font-semibold text-primary">
@@ -193,7 +193,7 @@ export default function UserHistory() {
                   className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                 >
                   <ClipboardCopy className="mr-2 h-4 w-4" />
-                  Copy
+                  <span className="hidden sm:inline">Copy</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -203,7 +203,7 @@ export default function UserHistory() {
                   className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                 >
                   <Pencil className="mr-2 h-4 w-4" />
-                  Edit
+                  <span className="hidden sm:inline">Edit</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -214,7 +214,7 @@ export default function UserHistory() {
                       className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                     >
                       <Download className="mr-2 h-4 w-4" />
-                      Download
+                      <span className="hidden sm:inline">Download</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -238,7 +238,7 @@ export default function UserHistory() {
                   className="transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  <span className="hidden sm:inline">Delete</span>
                 </Button>
               </div>
             )}

@@ -395,7 +395,7 @@ export default function TypeWiseAI() {
               <Wand2 className="h-6 w-6 text-accent" aria-hidden="true" />
             </div>
             <div>
-              <CardTitle className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
                 TypeWise AI
               </CardTitle>
               <CardDescription className="text-muted-foreground pt-1">
@@ -414,7 +414,7 @@ export default function TypeWiseAI() {
                 onClick={() => applyTemplate("internship")}
                 className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
               >
-                <Briefcase className="mr-2" />
+                <Briefcase className="mr-2 h-4 w-4" />
                 Internship Request
               </Button>
               <Button
@@ -423,7 +423,7 @@ export default function TypeWiseAI() {
                 onClick={() => applyTemplate("followup")}
                 className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
               >
-                <MailCheck className="mr-2" />
+                <MailCheck className="mr-2 h-4 w-4" />
                 Interview Follow-up
               </Button>
               <Button
@@ -432,7 +432,7 @@ export default function TypeWiseAI() {
                 onClick={() => applyTemplate("networking")}
                 className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
               >
-                <Users className="mr-2" />
+                <Users className="mr-2 h-4 w-4" />
                 Networking Outreach
               </Button>
             </div>
@@ -646,7 +646,7 @@ export default function TypeWiseAI() {
                   variant="outline"
                   onClick={handleSuggest}
                   disabled={isLoading || isSuggesting}
-                  className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
+                  className="w-full sm:w-auto transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                 >
                   <Wand2
                     className={`mr-2 h-4 w-4 ${
@@ -687,11 +687,11 @@ export default function TypeWiseAI() {
                 ) : (
                   generatedOutput && (
                     <>
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <h3 className="text-lg font-semibold tracking-tight">
                           Generated Message
                         </h3>
-                        <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4 self-end sm:self-center">
                           <div className="flex items-center space-x-2">
                             <Switch
                               id="edit-mode-toggle"
@@ -730,20 +730,20 @@ export default function TypeWiseAI() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={handleEdit}
-                          className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
                           onClick={handleCopy}
                           className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
                         >
                           <ClipboardCopy className="mr-2 h-4 w-4" />
                           Copy
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleEdit}
+                          className="transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-accent/20"
+                        >
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
                         </Button>
                         <Button
                           variant="outline"
