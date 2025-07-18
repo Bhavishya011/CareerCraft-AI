@@ -1,7 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { Pencil, Trash2, Save, X } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Save,
+  X,
+  ClipboardCopy,
+  Download,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export default function UserHistory() {
   const [history, setHistory] = useState<any[]>([]);
@@ -9,6 +24,7 @@ export default function UserHistory() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchHistory() {
@@ -30,11 +46,16 @@ export default function UserHistory() {
   const handleDelete = async (id: string) => {
     await supabase.from("History").delete().eq("id", id);
     setHistory((prev) => prev.filter((item) => item.id !== id));
+    toast({
+      title: "Deleted!",
+      description: "The message has been removed from your history.",
+    });
   };
 
   const handleEdit = (id: string, message: string) => {
     setEditId(id);
     setEditValue(message);
+    setOpenId(id); // Keep the item open when editing
   };
 
   const handleEditSave = async (id: string) => {
@@ -46,11 +67,51 @@ export default function UserHistory() {
     );
     setEditId(null);
     setEditValue("");
+    toast({
+      title: "Saved!",
+      description: "Your message has been updated.",
+    });
   };
 
   const handleEditCancel = () => {
     setEditId(null);
     setEditValue("");
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied to clipboard!",
+      description: "The message has been copied successfully.",
+    });
+  };
+
+  const handleDownloadPdf = async (text: string) => {
+    const { default: jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    const splitText = doc.splitTextToSize(text, 180);
+    doc.text(splitText, 10, 10);
+    doc.save("TypeWise-Message.pdf");
+    toast({
+      title: "Download Started",
+      description: "Your PDF is being downloaded.",
+    });
+  };
+
+  const handleDownloadWord = (text: string) => {
+    const blob = new Blob([text], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "TypeWise-Message.doc";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Download Started",
+      description: "Your Word document is being downloaded.",
+    });
   };
 
   if (loading) return <div>Loading...</div>;
@@ -67,82 +128,116 @@ export default function UserHistory() {
         return (
           <div
             key={item.id}
-            className={`bg-card/80 border border-accent/20 rounded-xl p-3 shadow-sm cursor-pointer transition-all ${
+            className={`bg-card/80 border border-accent/20 rounded-xl p-3 shadow-sm transition-all duration-300 ${
               isOpen ? "ring-2 ring-primary" : "hover:bg-accent/10"
             }`}
-            onClick={() => !isEditing && setOpenId(isOpen ? null : item.id)}
           >
-            <div className="flex items-center justify-between">
+            <div
+              className="flex items-center justify-between cursor-pointer"
+              onClick={() => !isEditing && setOpenId(isOpen ? null : item.id)}
+            >
               <div className="text-sm text-muted-foreground">
                 {new Date(item.created_at).toLocaleString()}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  className="p-1 hover:bg-accent/20 rounded"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (isEditing) {
-                      handleEditCancel();
-                    } else {
-                      handleEdit(item.id, item.message);
-                      setOpenId(item.id); // Keep it open when editing
-                    }
-                  }}
-                  title={isEditing ? "Cancel Edit" : "Edit"}
-                >
-                  {isEditing ? (
-                    <X className="w-4 h-4 text-destructive" />
-                  ) : (
-                    <Pencil className="w-4 h-4 text-primary" />
-                  )}
-                </button>
-                <button
-                  className="p-1 hover:bg-destructive/20 rounded"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(item.id);
-                  }}
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </button>
-                {!isEditing && (
-                   <div className="text-sm font-semibold text-primary">
-                      {isOpen ? "Hide" : "Open"}
-                   </div>
-                )}
+              <div className="text-sm font-semibold text-primary">
+                {isOpen ? "Hide" : "Show"}
               </div>
             </div>
-            <div className="mt-1 text-base whitespace-pre-wrap">
+
+            <div
+              className={`mt-2 text-base whitespace-pre-wrap transition-all duration-300 overflow-hidden ${
+                isOpen ? "max-h-screen" : "max-h-12"
+              }`}
+            >
               {isEditing ? (
                 <div className="flex flex-col gap-2 mt-2">
                   <textarea
                     className="w-full rounded border border-input bg-background p-2 text-base text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     value={editValue}
-                    onClick={(e) => e.stopPropagation()}
                     onChange={(e) => setEditValue(e.target.value)}
-                    rows={4}
+                    rows={6}
                   />
                   <div className="flex gap-2 justify-end">
-                    <button
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditSave(item.id);
-                      }}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEditCancel}
                     >
-                      <Save className="w-4 h-4" /> Save
-                    </button>
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleEditSave(item.id)}
+                    >
+                      <Save className="w-4 h-4 mr-2" /> Save
+                    </Button>
                   </div>
                 </div>
-              ) : isOpen ? (
-                item.message
-              ) : item.message.length > 60 ? (
-                item.message.slice(0, 60) + "..."
               ) : (
-                item.message
+                <p>
+                  {isOpen
+                    ? item.message
+                    : item.message.slice(0, 100) +
+                      (item.message.length > 100 ? "..." : "")}
+                </p>
               )}
             </div>
+
+            {isOpen && !isEditing && (
+              <div className="flex items-center justify-end gap-1 border-t border-accent/10 mt-3 pt-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleCopy(item.message)}
+                  title="Copy"
+                >
+                  <ClipboardCopy className="w-4 h-4 text-primary" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleEdit(item.id, item.message)}
+                  title="Edit"
+                >
+                  <Pencil className="w-4 h-4 text-primary" />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4 text-primary" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => handleDownloadPdf(item.message)}
+                    >
+                      PDF Document (.pdf)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDownloadWord(item.message)}
+                    >
+                      Word Document (.doc)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleDelete(item.id)}
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
+              </div>
+            )}
           </div>
         );
       })}
