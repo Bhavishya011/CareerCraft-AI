@@ -21,7 +21,7 @@ Visit the live app: [https://typewise-ai.netlify.app](https://typewise-ai.netlif
 
 ## Built With
 
-TypeScript · Next.js · Gemini 2.0 API · Firebase Functions · Netlify (Hosting & Deployment) · HTML/CSS
+TypeScript · Next.js · Gemini 2.0 API  · Netlify (Hosting & Deployment) · HTML/CSS
 
 ## How It Works
 
